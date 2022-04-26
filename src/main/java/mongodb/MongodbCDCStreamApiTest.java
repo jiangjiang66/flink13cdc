@@ -25,10 +25,15 @@ public class MongodbCDCStreamApiTest {
                 .hosts("172.16.43.182:27018")
                 .username("test")
                 .password("123456")
-                .databaseList("admin")
-                .collectionList("book")
+                .database("test")
+                .collection("")
+                //.databaseList("test") //不要使用admin系统库，会无法watch
+                //.collectionList("test.book")
                 .deserializer(new JsonDebeziumDeserializationSchema())
+                //.deserializer(new MongodbDeserialization())
                 .build();
+
+        //存在一个问题：只能监听到初始化的数据，对于mongodb的新增修改删除监听不到
 
 //        SourceFunction<String> sourceFunction = MongoDBSource.<String>builder()
 //                .hosts("172.16.43.182:27018")
@@ -37,7 +42,6 @@ public class MongodbCDCStreamApiTest {
 //                //.pipeline("[{'$match': {'ns.db': {'$regex': '/^(sandbox|firewall)$/'}}}]")
 //                .deserializer(new JsonDebeziumDeserializationSchema())
 //                .build();
-
 
         env.addSource(sourceFunction,"MongoDB Source").print();
 
