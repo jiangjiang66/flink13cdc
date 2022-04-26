@@ -10,11 +10,43 @@ flink版本使用的flink1.13.0
 
    https://blog.csdn.net/DH719491759/article/details/116781313
 
-2. 开启oplog
+2. 开启oplog, 需要修改下存储引擎，配置副本集，搭建集群, 配置如下
 
-   需要修改下存储引擎，配置副本集，搭建集群
-
-![image-20220426122437486](C:\Users\12727\AppData\Roaming\Typora\typora-user-images\image-20220426122437486.png)
+   mongodb的服务端口
+   
+   port=27017
+   
+   数据存放目录
+   
+   dbpath=/data/mogodb/mongodb-4.4.13/server/27017/data/db
+   
+   指定日志文件
+   
+   logpath=/data/mogodb/mongodb-4.4.13/server/27017/log/mongodb.log
+   
+   写日志的模式，设置为true为追加。默认是覆盖。如果未指定此设置，启动时MongoDB的将覆盖现有的日志文件。
+   
+   logappend=true
+   
+   绑定地址，默认127.0.0.1，只能通过本地连接
+   
+   bind_ip=0.0.0.0
+   
+   是否后台运行，true为后台运行，默认false
+   
+   fork=true
+   
+   是否开启操作日志
+   
+   journal=true
+   
+   副本集配置，所有主机必须有相同的名称作为同一个副本集
+   
+   replSet=shard1
+   关闭认证方式
+   auth=false
+   设置存储引擎
+   storageEngine=wiredTiger
 
 3. 配置依赖，编写程序
 
@@ -104,7 +136,9 @@ http://www.360doc.com/content/21/1209/15/78047646_1007851637.shtml
 
 启用binlog，通过配置 /etc/my.cnf 或 /etc/mysql/mysql.conf.d/mysqld.cnf 配置文件的 log-bin 选择
 
-![image-20220426144842840](C:\Users\12727\AppData\Roaming\Typora\typora-user-images\image-20220426144842840.png)
+log-bin=mysql-bin
+
+binlog_format=ROW
 
 配好之后需要重启mysql
 
@@ -118,7 +152,9 @@ systemctl restart mysqld
 
 登录mysql，验证是否确实开了binlog，value=ON则表示开启了binlog
 
-![image-20220426145733597](C:\Users\12727\AppData\Roaming\Typora\typora-user-images\image-20220426145733597.png)
+mysql> show variables like '%log_bin%';
+
+log_bin = ON 则表示开启了binlog
 
 3.配置依赖，书写程序
 
@@ -173,7 +209,9 @@ https://www.runoob.com/mysql/mysql-administration.html
 
 支持一下类MySQL数据库
 
-![image-20220426144347237](C:\Users\12727\AppData\Roaming\Typora\typora-user-images\image-20220426144347237.png)
+| Connector                                                    | Database                                                     | Driver              |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------- |
+| [mysql-cdc](https://ververica.github.io/flink-cdc-connectors/master/content/connectors/mysql-cdc.html#) | [MySQL](https://dev.mysql.com/doc): 5.6, 5.7, 8.0.x[RDS MySQL](https://www.aliyun.com/product/rds/mysql): 5.6, 5.7, 8.0.x[PolarDB MySQL](https://www.aliyun.com/product/polardb): 5.6, 5.7, 8.0.x[Aurora MySQL](https://aws.amazon.com/cn/rds/aurora): 5.6, 5.7, 8.0.x[MariaDB](https://mariadb.org/): 10.x[PolarDB X](https://github.com/ApsaraDB/galaxysql): 2.0.1 | JDBC Driver: 8.0.21 |
 
 flink cdc2.2.0之前不支持mysql5.6版本，flink cdc2.2.0开始支持了mysql5.6 、5.7、8.0.x版本
 
@@ -429,11 +467,28 @@ MySQL CDC 支持 5.6 ，满足低版本的mysql用户需求
 
 flink cdc 2.2.0目前支持的数据库及版本
 
-![image-20220426154412135](C:\Users\12727\AppData\Roaming\Typora\typora-user-images\image-20220426154412135.png)
+| Connector                                                    | Database                                                     | Driver                  |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ----------------------- |
+| [mongodb-cdc](https://ververica.github.io/flink-cdc-connectors/master/content/connectors/mongodb-cdc.html) | [MongoDB](https://www.mongodb.com/): 3.6, 4.x, 5.0           | MongoDB Driver: 4.3.1   |
+| [mysql-cdc](https://ververica.github.io/flink-cdc-connectors/master/content/connectors/mysql-cdc.html) | [MySQL](https://dev.mysql.com/doc): 5.6, 5.7, 8.0.x[RDS MySQL](https://www.aliyun.com/product/rds/mysql): 5.6, 5.7, 8.0.x[PolarDB MySQL](https://www.aliyun.com/product/polardb): 5.6, 5.7, 8.0.x[Aurora MySQL](https://aws.amazon.com/cn/rds/aurora): 5.6, 5.7, 8.0.x[MariaDB](https://mariadb.org/): 10.x[PolarDB X](https://github.com/ApsaraDB/galaxysql): 2.0.1 | JDBC Driver: 8.0.27     |
+| [oceanbase-cdc](https://ververica.github.io/flink-cdc-connectors/master/content/connectors/oceanbase-cdc.html) | [OceanBase CE](https://open.oceanbase.com/): 3.1.x           | JDBC Driver: 5.7.4x     |
+| [oracle-cdc](https://ververica.github.io/flink-cdc-connectors/master/content/connectors/oracle-cdc.html) | [Oracle](https://www.oracle.com/index.html): 11, 12, 19      | Oracle Driver: 19.3.0.0 |
+| [postgres-cdc](https://ververica.github.io/flink-cdc-connectors/master/content/connectors/postgres-cdc.html) | [PostgreSQL](https://www.postgresql.org/): 9.6, 10, 11, 12   | JDBC Driver: 42.2.12    |
+| [sqlserver-cdc](https://ververica.github.io/flink-cdc-connectors/master/content/connectors/sqlserver-cdc.html) | [Sqlserver](https://www.microsoft.com/sql-server): 2012, 2014, 2016, 2017, 2019 | JDBC Driver: 7.2.2.jre8 |
+| [tidb-cdc](https://ververica.github.io/flink-cdc-connectors/master/content/connectors/tidb-cdc.html) | [TiDB](https://www.pingcap.com/): 5.1.x, 5.2.x, 5.3.x, 5.4.x, 6.0.0 | JDBC Driver: 8.0.27     |
 
 flink cdc 和 flink 版本的对应关系
 
-![image-20220426155944932](C:\Users\12727\AppData\Roaming\Typora\typora-user-images\image-20220426155944932.png)
+| Flink® CDC Version | Flink® Version |
+| ------------------ | -------------- |
+| 1.0.0              | 1.11.*         |
+| 1.1.0              | 1.11.*         |
+| 1.2.0              | 1.12.*         |
+| 1.3.0              | 1.12.*         |
+| 1.4.0              | 1.13.*         |
+| 2.0.*              | 1.13.*         |
+| 2.1.*              | 1.13.*         |
+| 2.2.*              | 1.13.*, 1.14.* |
 
 Table/SQL API 需要在flink 1.12+ ，并且 Java 8+
 
